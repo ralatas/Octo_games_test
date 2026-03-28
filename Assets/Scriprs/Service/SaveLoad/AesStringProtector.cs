@@ -3,61 +3,64 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-public sealed class AesStringProtector : IStringProtector
+namespace Scriprs.Service.SaveLoad
 {
-    private readonly byte[] _key;
-    private readonly byte[] _iv;
-
-    public AesStringProtector(string secretKey, string ivSecret)
+    public sealed class AesStringProtector : IStringProtector
     {
-        _key = CreateKey(secretKey);
-        _iv = CreateIV(ivSecret);
-    }
+        private readonly byte[] _key;
+        private readonly byte[] _iv;
 
-    public string Protect(string plainText)
-    {
-        using Aes aes = Aes.Create();
-        aes.Key = _key;
-        aes.IV = _iv;
-
-        ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-        using MemoryStream ms = new MemoryStream();
-        using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
-        using (StreamWriter sw = new StreamWriter(cs))
+        public AesStringProtector(string secretKey, string ivSecret)
         {
-            sw.Write(plainText);
+            _key = CreateKey(secretKey);
+            _iv = CreateIV(ivSecret);
         }
 
-        return Convert.ToBase64String(ms.ToArray());
-    }
+        public string Protect(string plainText)
+        {
+            using Aes aes = Aes.Create();
+            aes.Key = _key;
+            aes.IV = _iv;
 
-    public string Unprotect(string protectedText)
-    {
-        byte[] encryptedBytes = Convert.FromBase64String(protectedText);
+            ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
 
-        using Aes aes = Aes.Create();
-        aes.Key = _key;
-        aes.IV = _iv;
+            using MemoryStream ms = new MemoryStream();
+            using (CryptoStream cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+            using (StreamWriter sw = new StreamWriter(cs))
+            {
+                sw.Write(plainText);
+            }
 
-        ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+            return Convert.ToBase64String(ms.ToArray());
+        }
 
-        using MemoryStream ms = new MemoryStream(encryptedBytes);
-        using CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
-        using StreamReader sr = new StreamReader(cs);
+        public string Unprotect(string protectedText)
+        {
+            byte[] encryptedBytes = Convert.FromBase64String(protectedText);
 
-        return sr.ReadToEnd();
-    }
+            using Aes aes = Aes.Create();
+            aes.Key = _key;
+            aes.IV = _iv;
 
-    private static byte[] CreateKey(string key)
-    {
-        using SHA256 sha256 = SHA256.Create();
-        return sha256.ComputeHash(Encoding.UTF8.GetBytes(key));
-    }
+            ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
 
-    private static byte[] CreateIV(string ivSecret)
-    {
-        using MD5 md5 = MD5.Create();
-        return md5.ComputeHash(Encoding.UTF8.GetBytes(ivSecret));
+            using MemoryStream ms = new MemoryStream(encryptedBytes);
+            using CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+            using StreamReader sr = new StreamReader(cs);
+
+            return sr.ReadToEnd();
+        }
+
+        private static byte[] CreateKey(string key)
+        {
+            using SHA256 sha256 = SHA256.Create();
+            return sha256.ComputeHash(Encoding.UTF8.GetBytes(key));
+        }
+
+        private static byte[] CreateIV(string ivSecret)
+        {
+            using MD5 md5 = MD5.Create();
+            return md5.ComputeHash(Encoding.UTF8.GetBytes(ivSecret));
+        }
     }
 }

@@ -3,5 +3,6 @@
   public enum WindowId
   {
     GameOverWindow = 0,
+    GameActionsWindow = 1,
   }
 }

@@ -4,6 +4,7 @@ using Zenject;
 
 namespace Scriprs.Service.Windows
 {
+
   public class WindowFactory : IWindowFactory
   {
     private readonly IStaticDataService _staticData;
@@ -19,14 +20,16 @@ namespace Scriprs.Service.Windows
     public void SetUIRoot(RectTransform uiRoot) =>
       _uiRoot = uiRoot;
 
-    public BaseWindow CreateWindow(WindowId windowId)
+    public BaseWindow CreateWindow(WindowId windowId ) =>
+        _instantiator.InstantiatePrefabForComponent<BaseWindow>(PrefabFor(windowId), _uiRoot);
+
+    public BaseWindow CreateWindow(WindowId windowId, IWindowPayload payload)
     {
-      Debug.Log(windowId);
-      Debug.Log(_uiRoot);
-      return _instantiator.InstantiatePrefabForComponent<BaseWindow>(PrefabFor(windowId), _uiRoot);
+      BaseWindow window = _instantiator.InstantiatePrefabForComponent<BaseWindow>(PrefabFor(windowId), _uiRoot);
+      window.Payload = payload;
+      return window;
     }
 
-   
 
     private GameObject PrefabFor(WindowId id) =>
       _staticData.GetWindowPrefab(id);

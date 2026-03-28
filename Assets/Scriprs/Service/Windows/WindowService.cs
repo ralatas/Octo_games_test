@@ -14,6 +14,8 @@ namespace Scriprs.Service.Windows
 
     public void Open(WindowId windowId) => 
       _openedWindows.Add(_windowFactory.CreateWindow(windowId));
+    public void Open(WindowId windowId, IWindowPayload payload) => 
+      _openedWindows.Add(_windowFactory.CreateWindow(windowId, payload));
 
     public void Close(WindowId windowId)
     {

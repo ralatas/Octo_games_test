@@ -5,6 +5,7 @@ namespace Scriprs.Service.Windows
   public class BaseWindow : MonoBehaviour
   {
     public WindowId Id { get; protected set; }
+    public IWindowPayload Payload { get; set; }
 
     private void Awake() =>
       OnAwake();
